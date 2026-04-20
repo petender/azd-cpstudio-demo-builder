@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+name: cpstudio-demo-builder
+metadata:
+  template: cpstudio-demo-builder@0.1.0
+
+# Optional Azure infrastructure — add modules under infra/ when your demo agent
+# needs Azure backend resources (Azure OpenAI, AI Search, Functions, etc.).
+# When no Azure resources are needed, provision is a no-op and the hooks handle
+# everything on the Power Platform side.
+infra:
+  provider: bicep
+  path: ./infra
+
+hooks:
+  # ── Pre-provision: validate prerequisites & authenticate to Power Platform ──
+  preprovision:
+    shell: pwsh
+    run: ./hooks/preprovision.ps1
+    interactive: true
+    continueOnError: false
+
+  # ── Post-provision: deploy Copilot Studio agent ──
+  postprovision:
+    shell: pwsh
+    run: ./hooks/postprovision.ps1
+    interactive: true
+    continueOnError: false
+
+  # ── Post-down: clean up agent / solution from Power Platform ──
+  postdown:
+    shell: pwsh
+    run: ./hooks/postdown.ps1
+    interactive: true
+    continueOnError: false

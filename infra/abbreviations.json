@@ -1,0 +1,10 @@
+{
+  "cognitiveServicesAccounts": "cog-",
+  "searchServices": "srch-",
+  "storageAccounts": "st",
+  "functionApps": "func-",
+  "appServicePlans": "plan-",
+  "webSites": "app-",
+  "keyVaults": "kv-",
+  "managedIdentities": "id-"
+}

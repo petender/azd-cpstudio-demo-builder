@@ -1,0 +1,40 @@
+# azd environment files (contains secrets)
+.azure/
+
+# Temporary build artifacts
+.tmp/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/.ropeproject
+.vscode/settings.json
+.idea/
+*.suo
+*.user
+*.sln.docstates
+__pycache__/
+*.pyc
+
+# PowerShell
+*.ps1xml
+
+# Solution pack temp
+*.zip
+
+# Node
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Scenario subfolders — each user generates their own
+scenarios/*/
