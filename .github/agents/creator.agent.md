@@ -7,6 +7,8 @@ tools:
   - edit
   - search/codebase
   - execute
+instructions:
+  - ../instructions/knowledge-assets.instructions.md
 handoffs:
   - label: "Deploy this agent"
     agent: deploy
@@ -191,6 +193,30 @@ Or use the handoff button to invoke the deploy agent.
   ```
   ./scripts/export-agent.ps1 -SolutionName "..." -ScenarioName "..."
   ```
+
+### Step 5: Knowledge Assets (Always Offer This)
+
+After generating the template, offer to create **knowledge assets** that make the agent more useful for demos. Follow the complete workflow defined in [knowledge-assets.instructions.md](../instructions/knowledge-assets.instructions.md).
+
+**Quick summary of what to offer:**
+
+1. **Sample data files** — generate realistic demo data based on the agent's context (JSON for lookups, CSV for tabular data, Markdown for FAQs/guides). Save to `scenarios/<name>/template/`.
+
+2. **Knowledge source URL suggestions** — use your knowledge of the agent's domain to suggest 2-5 authoritative public websites. Present them with a one-line purpose and **ask for approval** before adding to `kickStartTemplate-1.0.0.json` (`spec.knowledgeSources.publicSites`) and `agent-config.yaml`.
+
+3. **Integration guide** — generate `KNOWLEDGE-ASSETS.md` in the template folder with step-by-step instructions for adding knowledge sources, uploading documents, and verifying everything works in Copilot Studio. Target audience: users who may not be Copilot Studio experts.
+
+**Example prompt to the user:**
+
+> Your agent template is ready! I can also create **knowledge assets** to enrich your demos:
+>
+> - **Sample data** — realistic test data your agent can reference (e.g., sample tickets, product catalog)
+> - **Suggested knowledge URLs** — public websites relevant to your agent's domain
+> - **Integration guide** — step-by-step instructions for adding these in Copilot Studio
+>
+> Want me to generate these? (You can pick all or just some)
+
+See the `pharmacy-assistant` scenario for a complete reference implementation with all asset types.
 
 ## Solution Export Workflow (Approach C)
 
