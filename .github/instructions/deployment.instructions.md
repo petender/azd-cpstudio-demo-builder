@@ -20,31 +20,62 @@ For YAML-template-based agents (simple agents created from scratch):
 5. A YAML template file in `template/` folder
 
 ### Environment Variables Required
+
+**In azd env (shared — set once per environment):**
 ```
 POWERPLATFORM_ENVIRONMENT_URL  — e.g., https://org123.crm.dynamics.com
 POWERPLATFORM_SOLUTION_NAME    — unique name for the solution (no spaces)
-DEPLOYMENT_MODE                — "template"
-AGENT_DISPLAY_NAME             — display name for the agent
-AGENT_SCHEMA_NAME              — (optional) auto-generated from display name
-SCENARIO_NAME                  — name of the scenario folder under scenarios/ (e.g., it-helpdesk)
+SCENARIO_NAME                  — name of the scenario folder under scenarios/
 ```
+
+**Auto-read from `agent-config.yaml` (no need to set manually):**
+```
+DEPLOYMENT_MODE                — read from agent-config.yaml deploymentMode field
+AGENT_DISPLAY_NAME             — read from agent-config.yaml name field
+AGENT_SCHEMA_NAME              — (optional) auto-generated from display name
+```
+
+The hooks read `AGENT_DISPLAY_NAME` and `DEPLOYMENT_MODE` directly from the scenario's
+`agent-config.yaml` file. You only need to set the shared infrastructure values and
+`SCENARIO_NAME` in azd env. You can still override any value via `azd env set` if needed.
+
+### Syncing from root .env
+
+The root `.env` file contains **shared** Power Platform values and the current
+`SCENARIO_NAME`. It does NOT contain scenario-specific values like `AGENT_DISPLAY_NAME`
+or `DEPLOYMENT_MODE` — those come from `scenarios/<name>/template/agent-config.yaml`.
+
+**Agent instruction:** Before running `azd up`:
+1. Ensure the root `.env` has the correct `SCENARIO_NAME` for the target scenario.
+2. Sync the root `.env` into azd env:
+
+```powershell
+# Sync root .env → azd env (run before azd up)
+Get-Content .env | Where-Object { $_ -match '^\s*[A-Z_]+=.+' } | ForEach-Object {
+    $parts = $_ -split '=', 2
+    azd env set $parts[0].Trim() $parts[1].Trim()
+}
+```
+
+3. When switching scenarios, also clear stale schema names:
+   `azd env set AGENT_SCHEMA_NAME ""`
 
 ### Deployment Steps
 ```powershell
 # 1. Initialize azd environment (if not done)
 azd init
 
-# 2. Set required variables
-azd env set POWERPLATFORM_ENVIRONMENT_URL "https://yourorg.crm.dynamics.com"
-azd env set POWERPLATFORM_SOLUTION_NAME "MyDemoAgent"
-azd env set DEPLOYMENT_MODE "template"
-azd env set AGENT_DISPLAY_NAME "My Demo Agent"
-azd env set SCENARIO_NAME "it-helpdesk"
+# 2. Edit root .env — set SCENARIO_NAME (e.g., tire-center)
 
-# 3. Deploy
+# 3. Sync root .env into azd env
+Get-Content .env | Where-Object { $_ -match '^\s*[A-Z_]+=.+' } | ForEach-Object {
+    $parts = $_ -split '=', 2; azd env set $parts[0].Trim() $parts[1].Trim()
+}
+
+# 4. Deploy (agent name + mode auto-read from agent-config.yaml)
 azd up
 
-# 4. Teardown when done
+# 5. Teardown when done
 azd down
 ```
 

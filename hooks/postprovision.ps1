@@ -29,9 +29,7 @@ function Get-AzdEnvValue {
 }
 
 # ── Read configuration ──
-$deploymentMode = Get-AzdEnvValue 'DEPLOYMENT_MODE'
-$solutionName   = Get-AzdEnvValue 'POWERPLATFORM_SOLUTION_NAME'
-$agentDisplayName = Get-AzdEnvValue 'AGENT_DISPLAY_NAME'
+$solutionName     = Get-AzdEnvValue 'POWERPLATFORM_SOLUTION_NAME'
 $agentSchemaName  = Get-AzdEnvValue 'AGENT_SCHEMA_NAME'
 $scenarioName     = Get-AzdEnvValue 'SCENARIO_NAME'
 
@@ -44,6 +42,24 @@ if ($scenarioName) {
 } else {
     # Legacy: fall back to root-level template/ or solution/ if they exist
     $scenarioRoot = $projectRoot
+}
+
+# ── Read scenario-specific values from agent-config.yaml (fallback to azd env) ──
+$agentConfigPath = Join-Path $scenarioRoot 'template' 'agent-config.yaml'
+$agentDisplayName = Get-AzdEnvValue 'AGENT_DISPLAY_NAME'
+$deploymentMode   = Get-AzdEnvValue 'DEPLOYMENT_MODE'
+
+if (Test-Path $agentConfigPath) {
+    $configLines = Get-Content $agentConfigPath
+    if (-not $agentDisplayName) {
+        $nameLine = $configLines | Where-Object { $_ -match '^name:\s*(.+)' } | Select-Object -First 1
+        if ($nameLine -match '^name:\s*(.+)') { $agentDisplayName = $Matches[1].Trim() }
+    }
+    if (-not $deploymentMode) {
+        $modeLine = $configLines | Where-Object { $_ -match '^deploymentMode:\s*(.+)' } | Select-Object -First 1
+        if ($modeLine -match '^deploymentMode:\s*(.+)') { $deploymentMode = $Matches[1].Trim() }
+    }
+    Write-Host "  Read agent-config.yaml from $agentConfigPath" -ForegroundColor Cyan
 }
 
 Write-Host "Deployment mode : $deploymentMode" -ForegroundColor Cyan

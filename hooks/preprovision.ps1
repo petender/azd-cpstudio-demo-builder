@@ -66,6 +66,19 @@ if ($scenarioName) {
     $scenarioRoot = $projectRoot
 }
 
+# ── Read deployment mode from agent-config.yaml if not set ──
+if (-not $deploymentMode) {
+    $agentConfigPath = Join-Path $scenarioRoot 'template' 'agent-config.yaml'
+    if (Test-Path $agentConfigPath) {
+        $modeLine = Get-Content $agentConfigPath | Where-Object { $_ -match '^deploymentMode:\s*(.+)' } | Select-Object -First 1
+        if ($modeLine -match '^deploymentMode:\s*(.+)') {
+            $deploymentMode = $Matches[1].Trim()
+            Write-Host "  Read deployment mode from agent-config.yaml: $deploymentMode" -ForegroundColor Cyan
+            azd env set DEPLOYMENT_MODE $deploymentMode
+        }
+    }
+}
+
 # Validate required vars
 $missing = @()
 if (-not $envUrl) { $missing += 'POWERPLATFORM_ENVIRONMENT_URL' }
